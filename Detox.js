@@ -85,6 +85,7 @@ let waitFor;
  * * `url` - used to specify an expo updates/hot reload url for loading from.
  * * `reuse` - reuse application for tests. By default, Detox reinstalls and relaunches app.
  * * `registerGlobals` - (default: true) Register Detox helper functions `by`, `element`, `expect`, `waitFor` globally.
+ * * `url` - URL to open via deep-link each time the app is launched (android) or immediately afterwards (iOS). Useful for opening a bundle URL at the beginning of tests when working with Expo.
  *
  */
 class Detox extends Helper {
@@ -145,6 +146,7 @@ class Detox extends Helper {
       url: undefined,
       reuse: false,
       reloadReactNative: false,
+      url: undefined,
     };
 
     const detoxConf = require(path.join(
@@ -206,7 +208,11 @@ class Detox extends Helper {
     if (this.options.reloadReactNative) {
       await this.device.reloadReactNative();
     } else {
-      await this.device.launchApp({ newInstance: true });
+      await this.device.launchApp({ newInstance: true, url: this.options.url });
+
+      if (this.device.getPlatform() === 'ios' && this.options.url) {
+        await this.device.openURL({ url: this.options.url });
+      }
     }
   }
 
