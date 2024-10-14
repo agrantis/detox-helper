@@ -391,6 +391,36 @@ class Detox extends Helper {
     return this.click(locator, context);
   }
 
+
+  /**
+   * Taps on an element.
+   * Element can be located by its text or id or accessibility id.
+   *
+   * The second parameter is an index in cases where there is more than one match on the screen
+   *
+   * Same as [click](#click)
+   *
+   * ```js
+   * I.tap('Login'); // locate by text
+   * I.tap('~nav-1'); // locate by accessibility label
+   * I.tap('#user'); // locate by id
+   * I.tap('Login', '#nav'); // locate by text inside #nav
+   * I.tap({ ios: 'Save', android: 'SAVE' }, '#main'); // different texts on iOS and Android
+   * ```
+   *
+   * @param {CodeceptJS.LocatorOrString} locator
+   * @param {CodeceptJS.LocatorOrString | null} [context=null]
+   */
+  async tapAtIndex(locator, index = null) {
+    locator = this._detectLocator(locator, 'text');
+
+    if (index !== null) {
+      return (await element(locator).atIndex(index)).tap();
+    }
+
+    return element(locator).tap();
+  }
+
   /**
    * Multi taps on an element.
    * Element can be located by its text or id or accessibility id.
