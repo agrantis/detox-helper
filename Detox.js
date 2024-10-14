@@ -933,6 +933,68 @@ class Detox extends Helper {
     }
     return by.type(locator);
   }
-}
 
+  /**
+   * Swipes within a scrollable container to an element.
+   *
+   * @param {CodeceptJS.LocatorOrString} targetLocator - Locator of the element to scroll to
+   * @param {CodeceptJS.LocatorOrString} containerLocator - Locator of the scrollable container
+   * @param {string} direction - 'up' or 'down'
+   */
+  async swipeToElement(targetLocator, containerLocator, direction = "down") {
+    const targetElement = element(this._detectLocator(targetLocator));
+
+    try {
+      let isVisible = false;
+      const maxAttempts = 10;
+      let attempts = 0;
+
+      while (!isVisible && attempts < maxAttempts) {
+        try {
+          await expect(targetElement).toBeVisible();
+          isVisible = true;
+        } catch (error) {
+          const scrollFunctions = {
+            down: this.swipeDown,
+            left: this.swipeLeft,
+            right: this.swipeRight,
+            up: this.swipeUp,
+          };
+
+          const scrollFunction = scrollFunctions[direction];
+          if (scrollFunction) {
+            await scrollFunction.call(this, containerLocator);
+           } else {
+            throw new Error(`Invalid scroll direction: ${direction}`);
+          }
+          attempts++;
+        }
+      }
+
+      if (!isVisible) {
+        throw new Error(
+          "Reached maximum swipe attempts without finding the element."
+        );
+      }
+    } catch (error) {
+      throw new Error(`Error swiping to element: ${error.message}`);
+    }
+  }
+
+  /**
+   * Closes the device keyboard.
+   */
+  async closeKeyboard() {
+    try {
+      if (this.device.getPlatform() === "ios") {
+        await this.device.dismissKeyboard();
+      } else if (this.device.getPlatform() === "android") {
+        await this.device.pressBack();
+      }
+    } catch (error) {
+      throw new Error(`Error closing keyboard: ${error.message}`);
+    }
+  }
+
+}
 module.exports = Detox;
